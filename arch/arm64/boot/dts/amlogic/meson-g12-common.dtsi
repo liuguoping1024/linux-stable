@@ -568,6 +568,14 @@
 						};
 					};
 
+					remote_input_pins: remote-input {
+						mux {
+							groups = "remote_input";
+							function = "remote_input";
+							bias-disable;
+						};
+					};
+
 					mclk0_a_pins: mclk0-a {
 						mux {
 							groups = "mclk0_a";
@@ -2008,6 +2016,14 @@
 						mux {
 							groups = "remote_ao_input";
 							function = "remote_ao_input";
+							bias-disable;
+						};
+					};
+
+					remote_out_ao_pins: remote-out {
+						mux {
+							groups = "remote_ao_out";
+							function = "remote_ao_out";
 							bias-disable;
 						};
 					};

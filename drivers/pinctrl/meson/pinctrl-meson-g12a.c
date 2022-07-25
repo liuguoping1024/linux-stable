@@ -216,6 +216,9 @@ static const unsigned int i2c3_sck_h_pins[]		= { GPIOH_1 };
 static const unsigned int i2c3_sda_a_pins[]		= { GPIOA_14 };
 static const unsigned int i2c3_sck_a_pins[]		= { GPIOA_15 };
 
+/* ir_in */
+static const unsigned int remote_input_pins[]	= { GPIOA_15 };
+
 /* uart_a */
 static const unsigned int uart_a_tx_pins[]		= { GPIOX_12 };
 static const unsigned int uart_a_rx_pins[]		= { GPIOX_13 };
@@ -737,6 +740,7 @@ static struct meson_pmx_group meson_g12a_periphs_groups[] = {
 	/* bank GPIOA */
 	GROUP(i2c3_sda_a,		2),
 	GROUP(i2c3_sck_a,		2),
+	GROUP(remote_input,		1),
 	GROUP(pdm_din0_a,		1),
 	GROUP(pdm_din1_a,		1),
 	GROUP(pdm_din2_a,		1),
@@ -1022,6 +1026,10 @@ static const char * const i2c3_groups[] = {
 	"i2c3_sda_a", "i2c3_sck_a",
 };
 
+static const char * const remote_input_groups[] = {
+	"remote_input",
+};
+
 static const char * const uart_a_groups[] = {
 	"uart_a_tx", "uart_a_rx", "uart_a_cts", "uart_a_rts",
 };
@@ -1266,6 +1274,7 @@ static struct meson_pmx_func meson_g12a_periphs_functions[] = {
 	FUNCTION(i2c1),
 	FUNCTION(i2c2),
 	FUNCTION(i2c3),
+	FUNCTION(remote_input),
 	FUNCTION(uart_a),
 	FUNCTION(uart_b),
 	FUNCTION(uart_c),
