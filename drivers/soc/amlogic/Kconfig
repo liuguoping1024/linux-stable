@@ -61,6 +61,16 @@ config MESON_SECURE_PM_DOMAINS
 	  Say yes to expose Amlogic Meson Secure Power Domains as Generic
 	  Power Domains.
 
+config MESON_GX_SOCINFO_SM
+	bool "Amlogic Meson GX SoC Information driver via Secure Monitor"
+	depends on (ARM64 && ARCH_MESON || COMPILE_TEST) && MESON_SM=y
+	default ARCH_MESON && MESON_SM
+	select SOC_BUS
+	help
+	  Say yes to support decoding of Amlogic Meson GX SoC family
+	  information about the type, package and version via secure
+	  monitor call.
+
 config MESON_MX_SOCINFO
 	bool "Amlogic Meson MX SoC Information driver"
 	depends on (ARM && ARCH_MESON) || COMPILE_TEST

@@ -33,10 +33,16 @@ union meson_cpu_id {
 	u32	raw;
 };
 
-struct meson_sm_chip_id {
-	u32 version;
-	union meson_cpu_id cpu_id;
-	u8 serial[12];
+union meson_sm_chip_id {
+	struct { // cpu_id v2
+		u32 version;
+		union meson_cpu_id cpu_id;
+		u8 serial[12];
+	} v2;
+	struct { // raw
+		u32 version;
+		u8 buf[12+sizeof(union meson_cpu_id)];
+	} raw;
 };
 
 static const struct meson_gx_soc_id {
