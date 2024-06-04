@@ -32,6 +32,10 @@ properties:
   reg:
     maxItems: 1
 
+  secure-monitor:
+    description: phandle to the secure-monitor node
+    $ref: /schemas/types.yaml#/definitions/phandle
+
   amlogic,has-chip-id:
     description: |
       A firmware register encodes the SoC type, package and revision
