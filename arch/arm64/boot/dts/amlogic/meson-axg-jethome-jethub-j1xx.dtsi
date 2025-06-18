@@ -18,7 +18,7 @@
 		serial0 = &uart_AO;   /* Console */
 		serial1 = &uart_A; /* UART Bluetooth */
 		serial3 = &uart_AO_B; /* ZigBee */
-		//serial6 = &uart_B; /* ZigBee */
+		serial6 = &uart_B; /* Thread */
 		ethernet0 = &ethmac;
 	};
 
@@ -336,11 +336,11 @@
 };
 
 /* UART Thread */
-//&uart_B {
-//	status = "okay";
-//	pinctrl-0 = <&uart_ao_b_pins>;
-//	pinctrl-names = "default";
-//};
+&uart_B {
+	status = "okay";
+	pinctrl-0 = <&uart_b_x_pins>;
+	pinctrl-names = "default";
+};
 
 &usb {
 	status = "okay";

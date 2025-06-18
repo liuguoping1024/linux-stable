@@ -54,7 +54,7 @@
 
 /* UART Bluetooth */
 /*
-&uart_B {
+&uart_A {
 	bluetooth {
 		compatible = "brcm,bcm43438-bt";
 		shutdown-gpios = <&gpio GPIOZ_7 GPIO_ACTIVE_HIGH>;
@@ -69,6 +69,10 @@
 	pinctrl-names = "default";
 };
 
+/* UART Thread */
+&uart_B {
+	status = "disable";
+};
 
 /* wifi module */
 &sd_emmc_b {
