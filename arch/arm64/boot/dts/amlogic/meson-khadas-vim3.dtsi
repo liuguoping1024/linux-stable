@@ -41,9 +41,9 @@
 		compatible = "gpio-leds";
 
 		led-white {
-			label = "vim3:white:sys";
+			label = "vim3:white:power";
 			gpios = <&gpio_ao GPIOAO_4 GPIO_ACTIVE_HIGH>;
-			linux,default-trigger = "heartbeat";
+			linux,default-trigger = "default-on";
 		};
 
 		led-red {
