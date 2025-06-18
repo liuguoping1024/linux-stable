@@ -18,6 +18,7 @@
 		serial0 = &uart_AO;   /* Console */
 		serial1 = &uart_A; /* UART Bluetooth */
 		serial3 = &uart_AO_B; /* ZigBee */
+		//serial6 = &uart_B; /* ZigBee */
 		ethernet0 = &ethmac;
 	};
 
@@ -312,14 +313,6 @@
 };
 
 
-/* UART Bluetooth */
-// &uart_B {
-// 	status = "okay";
-// 	pinctrl-0 = <&uart_b_z_pins>, <&uart_b_z_cts_rts_pins>;
-// 	pinctrl-names = "default";
-// 	uart-has-rtscts;
-// };
-
 /* UART Console */
 &uart_AO {
 	status = "okay";
@@ -330,7 +323,7 @@
 /* Zigbee */
 &uart_AO_B {
 	status = "okay";
-	pinctrl-0 = <&uart_ao_b_pins>;
+	pinctrl-0 = <&uart_ao_b_z_pins>;
 	pinctrl-names = "default";
 };
 
@@ -341,6 +334,13 @@
 	pinctrl-names = "default";
 	uart-has-rtscts;
 };
+
+/* UART Thread */
+//&uart_B {
+//	status = "okay";
+//	pinctrl-0 = <&uart_ao_b_pins>;
+//	pinctrl-names = "default";
+//};
 
 &usb {
 	status = "okay";
