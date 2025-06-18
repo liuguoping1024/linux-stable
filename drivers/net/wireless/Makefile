@@ -42,5 +42,7 @@ obj-$(CONFIG_RTL8723DS) += rtl8723ds/
 obj-$(CONFIG_RTL8723DU) += rtl8723du/
 obj-$(CONFIG_RTL8822BS) += rtl8822bs/
 
-obj-m += w1/vmac/
-obj-m += sdio_driver_bt/
+obj-m += w1ss1/vmac/
+
+#obj-m += w1/vmac/
+#obj-m += sdio_driver_bt/
