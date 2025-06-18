@@ -14,7 +14,6 @@ enum mmc_busy_cmd {
 	MMC_BUSY_CMD6,
 	MMC_BUSY_ERASE,
 	MMC_BUSY_HPI,
-	MMC_BUSY_IO,
 };
 
 struct mmc_host;
@@ -48,6 +47,8 @@ int mmc_flush_cache(struct mmc_card *card);
 int mmc_cmdq_enable(struct mmc_card *card);
 int mmc_cmdq_disable(struct mmc_card *card);
 int mmc_sanitize(struct mmc_card *card);
+
+int mmc_interrupt_hpi(struct mmc_card *card);
 
 #endif
 

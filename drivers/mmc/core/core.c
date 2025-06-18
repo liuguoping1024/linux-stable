@@ -394,6 +394,7 @@ static int __mmc_start_req(struct mmc_host *host, struct mmc_request *mrq)
 	return err;
 }
 
+#if 0
 void mmc_wait_for_req_done(struct mmc_host *host, struct mmc_request *mrq)
 {
 	struct mmc_command *cmd;
@@ -418,6 +419,49 @@ void mmc_wait_for_req_done(struct mmc_host *host, struct mmc_request *mrq)
 
 	mmc_retune_release(host);
 }
+#else
+void mmc_wait_for_req_done(struct mmc_host *host, struct mmc_request *mrq)
+{
+	struct mmc_command *cmd;
+
+	while (1) {
+		wait_for_completion(&mrq->completion);
+
+		cmd = mrq->cmd;
+
+		/*
+		 * If host has timed out waiting for the sanitize
+		 * to complete, card might be still in programming state
+		 * so let's try to bring the card out of programming
+		 * state.
+		 */
+		if (cmd->sanitize_busy && cmd->error == -ETIMEDOUT) {
+			if (!mmc_interrupt_hpi(host->card)) {
+				pr_warn("%s: %s: Interrupted sanitize\n",
+					mmc_hostname(host), __func__);
+				cmd->error = 0;
+				break;
+			} else {
+				pr_err("%s: %s: Failed to interrupt sanitize\n",
+				       mmc_hostname(host), __func__);
+			}
+		}
+		if (!cmd->error || !cmd->retries ||
+		    mmc_card_removed(host->card))
+			break;
+
+		mmc_retune_recheck(host);
+
+		pr_debug("%s: req failed (CMD%u): %d, retrying...\n",
+			 mmc_hostname(host), cmd->opcode, cmd->error);
+		cmd->retries--;
+		cmd->error = 0;
+		__mmc_start_request(host, mrq);
+	}
+
+	mmc_retune_release(host);
+}
+#endif
 EXPORT_SYMBOL(mmc_wait_for_req_done);
 
 /*
@@ -547,26 +591,21 @@ int mmc_cqe_recovery(struct mmc_host *host)
 	host->cqe_ops->cqe_recovery_start(host);
 
 	memset(&cmd, 0, sizeof(cmd));
-	cmd.opcode       = MMC_STOP_TRANSMISSION;
-	cmd.flags        = MMC_RSP_R1B | MMC_CMD_AC;
+	cmd.opcode       = MMC_STOP_TRANSMISSION,
+	cmd.flags        = MMC_RSP_R1B | MMC_CMD_AC,
 	cmd.flags       &= ~MMC_RSP_CRC; /* Ignore CRC */
-	cmd.busy_timeout = MMC_CQE_RECOVERY_TIMEOUT;
-	mmc_wait_for_cmd(host, &cmd, MMC_CMD_RETRIES);
-
-	mmc_poll_for_busy(host->card, MMC_CQE_RECOVERY_TIMEOUT, MMC_BUSY_IO);
+	cmd.busy_timeout = MMC_CQE_RECOVERY_TIMEOUT,
+	mmc_wait_for_cmd(host, &cmd, 0);
 
 	memset(&cmd, 0, sizeof(cmd));
 	cmd.opcode       = MMC_CMDQ_TASK_MGMT;
 	cmd.arg          = 1; /* Discard entire queue */
 	cmd.flags        = MMC_RSP_R1B | MMC_CMD_AC;
 	cmd.flags       &= ~MMC_RSP_CRC; /* Ignore CRC */
-	cmd.busy_timeout = MMC_CQE_RECOVERY_TIMEOUT;
-	err = mmc_wait_for_cmd(host, &cmd, MMC_CMD_RETRIES);
+	cmd.busy_timeout = MMC_CQE_RECOVERY_TIMEOUT,
+	err = mmc_wait_for_cmd(host, &cmd, 0);
 
 	host->cqe_ops->cqe_recovery_finish(host);
-
-	if (err)
-		err = mmc_wait_for_cmd(host, &cmd, MMC_CMD_RETRIES);
 
 	mmc_retune_release(host);
 

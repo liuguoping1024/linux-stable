@@ -501,6 +501,7 @@ static int really_probe(struct device *dev, struct device_driver *drv)
 	bool test_remove = IS_ENABLED(CONFIG_DEBUG_TEST_DRIVER_REMOVE) &&
 			   !drv->suppress_bind_attrs;
 
+	pr_warn("%s: really_probe\n", drv->name);
 	if (defer_all_probes) {
 		/*
 		 * Value of defer_all_probes can be set only by
@@ -532,13 +533,16 @@ re_probe:
 
 	/* If using pinctrl, bind pins now before probing */
 	ret = pinctrl_bind_pins(dev);
+	pr_warn("%s: really_probe pinctrl_bind_pins ret:%d\n", drv->name,ret);
 	if (ret)
 		goto pinctrl_bind_failed;
 
 	if (dev->bus->dma_configure) {
 		ret = dev->bus->dma_configure(dev);
-		if (ret)
+		if (ret){
+			pr_warn("%s: really_probe dma_configure ret:%d\n", drv->name,ret);
 			goto probe_failed;
+		}
 	}
 
 	ret = driver_sysfs_add(dev);
@@ -550,23 +554,30 @@ re_probe:
 
 	if (dev->pm_domain && dev->pm_domain->activate) {
 		ret = dev->pm_domain->activate(dev);
-		if (ret)
+		if (ret){
+			pr_warn("%s: really_probe pm_domain activate ret:%d\n", drv->name,ret);
 			goto probe_failed;
+		}
 	}
 
 	if (dev->bus->probe) {
 		ret = dev->bus->probe(dev);
-		if (ret)
+		if (ret){
+			pr_warn("%s: bus:%s really_probe bus->probe ret:%d\n", drv->name,dev->bus->name, ret);
 			goto probe_failed;
+		}
 	} else if (drv->probe) {
 		ret = drv->probe(dev);
-		if (ret)
+		if (ret){
+			pr_warn("%s: really_probe drv->probe ret:%d\n", drv->name,ret);
 			goto probe_failed;
+		}
 	}
 
 	ret = device_add_groups(dev, drv->dev_groups);
 	if (ret) {
 		dev_err(dev, "device_add_groups() failed\n");
+		pr_warn("%s: really_probe device_add_groups ret:%d\n", drv->name,ret);
 		goto dev_groups_failed;
 	}
 
@@ -574,6 +585,7 @@ re_probe:
 		ret = device_create_file(dev, &dev_attr_state_synced);
 		if (ret) {
 			dev_err(dev, "state_synced sysfs add failed\n");
+			pr_warn("%s: really_probe sysfs add ret:%d\n", drv->name,ret);
 			goto dev_sysfs_state_synced_failed;
 		}
 	}
@@ -599,10 +611,10 @@ re_probe:
 		if (dev->pm_domain && dev->pm_domain->dismiss)
 			dev->pm_domain->dismiss(dev);
 		pm_runtime_reinit(dev);
-
+		pr_warn("%s: really_probe test_remove\n", drv->name);
 		goto re_probe;
 	}
-
+	pr_warn("%s: really_probe pinctrl_init_done\n", drv->name);
 	pinctrl_init_done(dev);
 
 	if (dev->pm_domain && dev->pm_domain->sync)
@@ -677,12 +689,7 @@ static int really_probe_debug(struct device *dev, struct device_driver *drv)
 	calltime = ktime_get();
 	ret = really_probe(dev, drv);
 	rettime = ktime_get();
-	/*
-	 * Don't change this to pr_debug() because that requires
-	 * CONFIG_DYNAMIC_DEBUG and we want a simple 'initcall_debug' on the
-	 * kernel commandline to print this all the time at the debug level.
-	 */
-	printk(KERN_DEBUG "probe of %s returned %d after %lld usecs\n",
+	pr_debug("probe of %s returned %d after %lld usecs\n",
 		 dev_name(dev), ret, ktime_us_delta(rettime, calltime));
 	return ret;
 }
@@ -1093,11 +1100,7 @@ static int __driver_attach(struct device *dev, void *data)
 		return 0;
 	} else if (ret < 0) {
 		dev_dbg(dev, "Bus failed to match device: %d\n", ret);
-		/*
-		 * Driver could not match with device, but may match with
-		 * another device on the bus.
-		 */
-		return 0;
+		return ret;
 	} /* ret > 0 means positive match */
 
 	if (driver_allows_async_probing(drv)) {
@@ -1187,6 +1190,8 @@ static void __device_release_driver(struct device *dev, struct device *parent)
 		else if (drv->remove)
 			drv->remove(dev);
 
+		device_links_driver_cleanup(dev);
+
 		devres_release_all(dev);
 		arch_teardown_dma_ops(dev);
 		kfree(dev->dma_range_map);
@@ -1197,8 +1202,6 @@ static void __device_release_driver(struct device *dev, struct device *parent)
 			dev->pm_domain->dismiss(dev);
 		pm_runtime_reinit(dev);
 		dev_pm_set_driver_flags(dev, 0);
-
-		device_links_driver_cleanup(dev);
 
 		klist_remove(&dev->p->knode_driver);
 		device_pm_check_callbacks(dev);

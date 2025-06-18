@@ -132,6 +132,8 @@
 
 #define MUX_CLK_NUM_PARENTS 2
 
+static struct mmc_host *sdio_host;
+
 struct meson_mmc_data {
 	unsigned int tx_delay_mask;
 	unsigned int rx_delay_mask;
@@ -802,6 +804,7 @@ static void meson_mmc_start_cmd(struct mmc_host *mmc, struct mmc_command *cmd)
 
 	cmd_cfg |= FIELD_PREP(CMD_CFG_CMD_INDEX_MASK, cmd->opcode);
 	cmd_cfg |= CMD_CFG_OWNER;  /* owned by CPU */
+	cmd_cfg |= CMD_CFG_ERROR; /* stop in case of error */
 
 	meson_mmc_set_response_bits(cmd, &cmd_cfg);
 
@@ -971,8 +974,11 @@ static irqreturn_t meson_mmc_irq(int irq, void *dev_id)
 	if (status & (IRQ_END_OF_CHAIN | IRQ_RESP_STATUS)) {
 		if (data && !cmd->error)
 			data->bytes_xfered = data->blksz * data->blocks;
-
-		return IRQ_WAKE_THREAD;
+		if (meson_mmc_bounce_buf_read(data) ||
+		    meson_mmc_get_next_command(cmd))
+			ret = IRQ_WAKE_THREAD;
+		else
+			ret = IRQ_HANDLED;
 	}
 
 out:
@@ -983,6 +989,9 @@ out:
 		start &= ~START_DESC_BUSY;
 		writel(start, host->regs + SD_EMMC_START);
 	}
+
+	if (ret == IRQ_HANDLED)
+		meson_mmc_request_done(host->mmc, cmd->mrq);
 
 	return ret;
 }
@@ -1123,7 +1132,7 @@ static int meson_mmc_probe(struct platform_device *pdev)
 	struct mmc_host *mmc;
 	int ret;
 
-	mmc = devm_mmc_alloc_host(&pdev->dev, sizeof(struct meson_host));
+	mmc = mmc_alloc_host(sizeof(struct meson_host), &pdev->dev);
 	if (!mmc)
 		return -ENOMEM;
 	host = mmc_priv(mmc);
@@ -1139,33 +1148,46 @@ static int meson_mmc_probe(struct platform_device *pdev)
 	host->vqmmc_enabled = false;
 	ret = mmc_regulator_get_supply(mmc);
 	if (ret)
-		return ret;
+		goto free_host;
 
 	ret = mmc_of_parse(mmc);
-	if (ret)
-		return dev_err_probe(&pdev->dev, ret, "error parsing DT\n");
+	if (ret) {
+		if (ret != -EPROBE_DEFER)
+			dev_warn(&pdev->dev, "error parsing DT: %d\n", ret);
+		goto free_host;
+	}
 
 	host->data = (struct meson_mmc_data *)
 		of_device_get_match_data(&pdev->dev);
-	if (!host->data)
-		return -EINVAL;
+	if (!host->data) {
+		ret = -EINVAL;
+		goto free_host;
+	}
 
 	ret = device_reset_optional(&pdev->dev);
-	if (ret)
-		return dev_err_probe(&pdev->dev, ret, "device reset failed\n");
+	if (ret) {
+		dev_err_probe(&pdev->dev, ret, "device reset failed\n");
+		goto free_host;
+	}
 
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	host->regs = devm_ioremap_resource(&pdev->dev, res);
-	if (IS_ERR(host->regs))
-		return PTR_ERR(host->regs);
+	if (IS_ERR(host->regs)) {
+		ret = PTR_ERR(host->regs);
+		goto free_host;
+	}
 
 	host->irq = platform_get_irq(pdev, 0);
-	if (host->irq < 0)
-		return host->irq;
+	if (host->irq <= 0) {
+		ret = -EINVAL;
+		goto free_host;
+	}
 
 	host->pinctrl = devm_pinctrl_get(&pdev->dev);
-	if (IS_ERR(host->pinctrl))
-		return PTR_ERR(host->pinctrl);
+	if (IS_ERR(host->pinctrl)) {
+		ret = PTR_ERR(host->pinctrl);
+		goto free_host;
+	}
 
 	host->pins_clk_gate = pinctrl_lookup_state(host->pinctrl,
 						   "clk-gate");
@@ -1176,12 +1198,14 @@ static int meson_mmc_probe(struct platform_device *pdev)
 	}
 
 	host->core_clk = devm_clk_get(&pdev->dev, "core");
-	if (IS_ERR(host->core_clk))
-		return PTR_ERR(host->core_clk);
+	if (IS_ERR(host->core_clk)) {
+		ret = PTR_ERR(host->core_clk);
+		goto free_host;
+	}
 
 	ret = clk_prepare_enable(host->core_clk);
 	if (ret)
-		return ret;
+		goto free_host;
 
 	ret = meson_mmc_clk_init(host);
 	if (ret)
@@ -1260,9 +1284,15 @@ static int meson_mmc_probe(struct platform_device *pdev)
 	}
 
 	mmc->ops = &meson_mmc_ops;
-	ret = mmc_add_host(mmc);
-	if (ret)
-		goto err_free_irq;
+	mmc_add_host(mmc);
+
+	/* if sdio_wifi */
+	printk("###%s: Check MMC Type ###\n",mmc_hostname(mmc));
+	if (!(mmc->caps2 & MMC_CAP2_NO_SDIO))
+	{
+		printk("###%s: Set sdio_host ###\n",mmc_hostname(mmc));
+		sdio_host = mmc;
+	}
 
 	return 0;
 
@@ -1276,6 +1306,8 @@ err_init_clk:
 	clk_disable_unprepare(host->mmc_clk);
 err_core_clk:
 	clk_disable_unprepare(host->core_clk);
+free_host:
+	mmc_free_host(mmc);
 	return ret;
 }
 
@@ -1299,6 +1331,7 @@ static int meson_mmc_remove(struct platform_device *pdev)
 	clk_disable_unprepare(host->mmc_clk);
 	clk_disable_unprepare(host->core_clk);
 
+	mmc_free_host(host->mmc);
 	return 0;
 }
 
@@ -1333,12 +1366,48 @@ static struct platform_driver meson_mmc_driver = {
 	.remove		= meson_mmc_remove,
 	.driver		= {
 		.name = DRIVER_NAME,
-		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
+		//.probe_type = PROBE_PREFER_ASYNCHRONOUS,
 		.of_match_table = of_match_ptr(meson_mmc_of_match),
 	},
 };
 
 module_platform_driver(meson_mmc_driver);
+
+
+static void sdio_rescan(struct mmc_host *mmc)
+{
+	int ret;
+
+	mmc->rescan_entered = 0;
+/*	mmc->host_rescan_disable = false;*/
+	mmc_detect_change(mmc, 0);
+	/* start the delayed_work */
+	ret = flush_work(&mmc->detect.work);
+	printk("[%s] flush_work ret:%d\n", __func__, ret);
+	/* wait for the delayed_work to finish */
+	if (!ret)
+		pr_info("Error: delayed_work mmc_rescan() already idle!\n");
+}
+
+void sdio_reinit(void)
+{
+#if 1
+	printk("[%s] \n", __func__);
+	if (sdio_host) {
+		if (sdio_host->card){
+			printk("[%s] sdio_reset_comm\n", __func__);
+			sdio_reset_comm(sdio_host->card);
+		}else{
+			printk("[%s] sdio_rescan\n", __func__);
+			sdio_rescan(sdio_host);
+		}
+	} else {
+		pr_info("Error: sdio_host is NULL\n");
+	}
+#endif
+	printk("[%s] finish\n", __func__);
+}
+EXPORT_SYMBOL(sdio_reinit);
 
 MODULE_DESCRIPTION("Amlogic S905*/GX*/AXG SD/eMMC driver");
 MODULE_AUTHOR("Kevin Hilman <khilman@baylibre.com>");
