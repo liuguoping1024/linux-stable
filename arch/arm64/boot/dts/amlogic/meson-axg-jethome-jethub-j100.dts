@@ -62,6 +62,12 @@
 };
 */
 
+/* wifi module */
+&sd_emmc_b {
+	broken-cd;/* cd-gpios = <&gpio_ao GPIOAO_3 GPIO_ACTIVE_LOW>;*/
+};
+
+
 &aml_wifi{
 	status = "okay";
 	interrupt-gpios = <&gpio  GPIOX_6  GPIO_ACTIVE_HIGH>;
