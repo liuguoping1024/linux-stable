@@ -26,17 +26,17 @@
 int sha256_vector(size_t num_elem, const u8 *addr[], const size_t *len,
 		  u8 *mac)
 {
-	struct sha256_state ctx;
+	struct sha256_state_i ctx;
 	size_t i;
 
 	if (TEST_FAIL())
 		return -1;
 
-	sha256_init(&ctx);
+	sha256_init_i(&ctx);
 	for (i = 0; i < num_elem; i++)
-		if (sha256_process(&ctx, addr[i], len[i]))
+		if (sha256_process_i(&ctx, addr[i], len[i]))
 			return -1;
-	if (sha256_done(&ctx, mac))
+	if (sha256_done_i(&ctx, mac))
 		return -1;
 	return 0;
 }
@@ -82,7 +82,7 @@ static const unsigned long K[64] = {
 #endif
 
 /* compress 512-bits */
-static int sha256_compress(struct sha256_state *md, unsigned char *buf)
+static int sha256_compress(struct sha256_state_i *md, unsigned char *buf)
 {
 	u32 S[8], W[64], t0, t1;
 	u32 t;
@@ -125,7 +125,7 @@ static int sha256_compress(struct sha256_state *md, unsigned char *buf)
 
 
 /* Initialize the hash state */
-void sha256_init(struct sha256_state *md)
+void sha256_init_i(struct sha256_state_i *md)
 {
 	md->curlen = 0;
 	md->length = 0;
@@ -146,7 +146,7 @@ void sha256_init(struct sha256_state *md)
    @param inlen  The length of the data (octets)
    @return CRYPT_OK if successful
 */
-int sha256_process(struct sha256_state *md, const unsigned char *in,
+int sha256_process_i(struct sha256_state_i *md, const unsigned char *in,
 		   unsigned long inlen)
 {
 	unsigned long n;
@@ -186,7 +186,7 @@ int sha256_process(struct sha256_state *md, const unsigned char *in,
    @param out [out] The destination of the hash (32 bytes)
    @return CRYPT_OK if successful
 */
-int sha256_done(struct sha256_state *md, unsigned char *out)
+int sha256_done_i(struct sha256_state_i *md, unsigned char *out)
 {
 	int i;
 
