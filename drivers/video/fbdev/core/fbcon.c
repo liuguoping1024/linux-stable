@@ -1011,7 +1011,7 @@ static void fbcon_init(struct vc_data *vc, bool init)
 	struct vc_data *svc = *default_mode;
 	struct fbcon_display *t, *p = &fb_display[vc->vc_num];
 	int logo = 1, new_rows, new_cols, rows, cols;
-	int ret;
+	int cap, ret;
 
 	if (WARN_ON(info_idx == -1))
 	    return;
@@ -1122,8 +1122,8 @@ static void fbcon_init(struct vc_data *vc, bool init)
 	ops->graphics = 0;
 
 #ifdef CONFIG_FRAMEBUFFER_CONSOLE_LEGACY_ACCELERATION
-	if ((info->flags & FBINFO_HWACCEL_COPYAREA) &&
-	    !(info->flags & FBINFO_HWACCEL_DISABLED))
+	if ((cap & FBINFO_HWACCEL_COPYAREA) &&
+	    !(cap & FBINFO_HWACCEL_DISABLED))
 		p->scrollmode = SCROLL_MOVE;
 	else /* default to something safe */
 		p->scrollmode = SCROLL_REDRAW;
