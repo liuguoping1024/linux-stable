@@ -1,0 +1,139 @@
+config AMLOGIC_GKI
+	bool "Amlogic GKI macro"
+	default n
+	help
+		This macro controls GKI module build behavior, if enabled
+		some internal code will be build as external module
+
+config AMLOGIC_MODIFY
+	bool "Amlogic modify for kernel code"
+	default y
+	help
+		This option is set up for AMLOGIC modify of standard
+		kernel source code. All modify of kernel standard code
+		should be wrapped by this config
+
+config AMLOGIC_ANDROIDP
+	bool "Amlogic modify kernel in project androidp"
+	default n
+	help
+		This option is set up for AMLOGIC modify of standard
+		kernel source code in project androidp.
+
+config AMLOGIC_REMOVE_OLD
+	bool "Amlogic remove old soc code for g12a previous"
+	default n
+	help
+		This option is set up for removing code for G12A
+		previous.All modify of not used code should be
+		wrapped by this config
+
+config AMLOGIC_ARMV8_AARCH64
+	bool "AARCH64 kernel support for Amlogic ARMv8 Soc"
+	depends on AMLOGIC_MODIFY || COMPILE_TEST
+	default y
+	help
+	  aarch32 and aarch64 kernels are supported for armv8 socs.
+	  enable this config to select 64 bit kernel.
+	  Select Y if doult.
+
+config AMLOGIC_DRIVER
+	bool "Amlogic Peripheral drivers"
+	depends on AMLOGIC_MODIFY
+	default y
+	help
+		this option is provided for control amlogic
+		drivers, if you want to use amlogic driver
+		please open it.
+		Note: All amlogic driver should be placed in
+		this directory
+
+config AMLOGIC_ALLYESCONFIG
+	bool "Amlogic compile config option"
+	default n
+	help
+		This option is set up for masking frame size
+		limit in drivers/Makefile file. When we compile
+		kernel with --allyesconfig, we not limit the
+		frame size.
+
+config AMLOGIC_MEDIA_V4L_DEC
+	bool "enable amlogic v4l decode module."
+	default n
+	help
+		Support v4L protocol based decoding components.
+		Decoding is done by AmLogic hardware, and if you
+		need to support this feature, you need to enable
+		this configuration item.
+
+config AMLOGIC_KERNEL_VERSION
+   int "Amlogic Kernel Version"
+   default 14515
+   help
+     kernel from android14-5.15
+     so the default value is 14515
+     the driver uses it to adapt different kernel versions
+
+config AMLOGIC_PWM_MESON
+	bool "Amlogic Meson PWM driver"
+	default y
+	help
+	  The platform driver for Amlogic Meson PWM controller.
+
+#
+# Amlogic DVB configuration
+#
+
+menu "Amlogic dvb configuration"
+
+config AMLOGIC_DVB
+	tristate "Amlogic dvb support"
+	depends on DVB_CORE && AMLOGIC_DVB_COMPAT
+	default n
+	help
+		This option is used only to control the
+		compilation of dvb related driver code, for
+		example hw_demux, it is enabled by default,
+		When it is turned on,it will automatically
+		select DVB_CORE and AMLOGIC_DVB_COMPAT.
+
+config AMLOGIC_DVB_COMPAT
+	tristate "Compat amlogic dvb"
+	depends on DVB_CORE
+	default n
+	help
+		This option is used only to compatible with
+		amlogic dvb related code, for example dvb-core,
+		it is enabled by default,depending on
+		AMLOGIC_DVB and DVB_CORE.
+
+config AMLOGIC_MFD
+	tristate "Compat amlogic mfd"
+	default n
+	help
+		This option is used only to compatible with
+		amlogic dvb related code,it is enabled by
+		default,depending on
+		AMLOGIC_MFD.
+
+config AMLOGIC_REGULATOR
+	tristate "Compat amlogic mfd"
+	default n
+	help
+		This option is used only to compatible with
+		amlogic mfd related code,it is enabled
+		by default,depending on
+		AMLOGIC_REGULATOR.
+
+endmenu
+
+if AMLOGIC_DRIVER
+menu "Amlogic Device Drivers"
+# Please add folders in alphabetical order
+
+source "drivers/amlogic/bluetooth/Kconfig"
+source "drivers/amlogic/wifi/Kconfig"
+
+
+endmenu
+endif
