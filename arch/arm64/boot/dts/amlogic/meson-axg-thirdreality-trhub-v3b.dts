@@ -10,8 +10,8 @@
 #include "meson-axg-jethome-jethub-j1xx.dtsi"
 
 / {
-	compatible = "jethome,jethub-j100", "amlogic,a113d", "amlogic,meson-axg";
-	model = "JetHome JetHub D1 (J100)";
+	compatible = "ThirdReality,trhub-v3b", "amlogic,a113d", "amlogic,meson-axg";
+	model = "ThirdReality TRHub V3b";
 
 	/* 1024MB RAM */
 	memory@0 {
@@ -54,7 +54,7 @@
 
 /* UART Bluetooth */
 /*
-&uart_B {
+&uart_A {
 	bluetooth {
 		compatible = "brcm,bcm43438-bt";
 		shutdown-gpios = <&gpio GPIOZ_7 GPIO_ACTIVE_HIGH>;

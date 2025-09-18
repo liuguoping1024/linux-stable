@@ -10,10 +10,10 @@
 #include "meson-axg-jethome-jethub-j1xx.dtsi"
 
 / {
-	compatible = "jethome,jethub-j100", "amlogic,a113d", "amlogic,meson-axg";
-	model = "JetHome JetHub D1 (J100)";
+	compatible = "jethome,jethub-j110", "amlogic,a113d", "amlogic,meson-axg";
+	model = "JetHome JetHub D1p (J110) Hw rev.3";
 
-	/* 1024MB RAM */
+	/* 2GiB or 4GiB RAM */
 	memory@0 {
 		device_type = "memory";
 		reg = <0x0 0x0 0x0 0x80000000>;

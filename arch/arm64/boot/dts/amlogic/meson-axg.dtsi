@@ -1653,6 +1653,14 @@
 						bias-disable;
 					};
 				};
+
+				pwm_ao_c_ao8_pins:pwm_ao_c_ao8 {
+					mux {
+						groups = "pwm_ao_c_ao8";
+						function = "pwm_ao_c";
+						bias-disable;
+					};
+				};
 			};
 
 			sec_AO: ao-secure@140 {
