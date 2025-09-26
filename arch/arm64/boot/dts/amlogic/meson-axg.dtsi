@@ -1088,7 +1088,7 @@
 						groups = "uart_tx_b_x",
 							 "uart_rx_b_x";
 						function = "uart_b";
-						bias-disable;
+                        bias-pull-up;
 					};
 				};
 
