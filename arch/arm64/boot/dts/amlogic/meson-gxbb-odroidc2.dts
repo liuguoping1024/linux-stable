@@ -9,6 +9,7 @@
 
 #include "meson-gxbb.dtsi"
 #include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/sound/meson-aiu.h>
 
 / {
 	compatible = "hardkernel,odroid-c2", "amlogic,meson-gxbb";
@@ -16,6 +17,8 @@
 
 	aliases {
 		serial0 = &uart_AO;
+		serial1 = &uart_A;
+		serial2 = &uart_C;
 		ethernet0 = &ethmac;
 	};
 
@@ -120,6 +123,32 @@
 		vin-supply = <&vddio_ao3v3>;
 	};
 
+	spi-gpio {
+		compatible = "spi-gpio";
+		#address-cells = <0x1>;
+		#size-cells = <0x0>;
+		ranges;
+		status = "disabled";
+		sck-gpios  = <&gpio GPIOX_2 0>;
+		miso-gpios = <&gpio GPIOX_4 0>;
+		mosi-gpios = <&gpio GPIOX_7 0>;
+		cs-gpios  = <&gpio GPIOX_3 0
+			     &gpio GPIOX_1 0>;
+		num-chipselects = <2>;
+
+		/* clients */
+		spidev0@0 {
+			compatible = "spidev";
+			reg = <0>;
+			spi-max-frequency = <500000>;
+		};
+		spidev0@1 {
+			compatible = "spidev";
+			reg = <1>;
+			spi-max-frequency = <500000>;
+		};
+	};
+
 	vcc3v3: regulator-vcc3v3 {
 		compatible = "regulator-fixed";
 		regulator-name = "VCC3V3";
@@ -172,6 +201,44 @@
 			};
 		};
 	};
+	sound {
+		compatible = "amlogic,gx-sound-card";
+		model = "GX-SOUND-CARD";
+		assigned-clocks = <&clkc CLKID_MPLL0>,
+				  <&clkc CLKID_MPLL1>,
+				  <&clkc CLKID_MPLL2>;
+		assigned-clock-parents = <0>, <0>, <0>;
+		assigned-clock-rates = <294912000>,
+			       <270950400>,
+				       <393216000>;
+		status = "okay";
+
+		dai-link-0 {
+			sound-dai = <&aiu AIU_CPU CPU_I2S_FIFO>;
+		};
+
+		dai-link-1 {
+			sound-dai = <&aiu AIU_CPU CPU_I2S_ENCODER>;
+			dai-format = "i2s";
+			mclk-fs = <256>;
+
+			codec-0 {
+				sound-dai = <&aiu AIU_HDMI CTRL_I2S>;
+			};
+		};
+
+		dai-link-2 {
+			sound-dai = <&aiu AIU_HDMI CTRL_OUT>;
+
+			codec-0 {
+				sound-dai = <&hdmi_tx>;
+			};
+		};
+	};
+};
+
+&aiu {
+	status = "okay";
 };
 
 &cec_AO {
@@ -308,7 +375,8 @@
 };
 
 &scpi_clocks {
-	status = "disabled";
+	/* Works only with new blobs that have limited DVFS table */
+	status = "okay";
 };
 
 /* SD */
@@ -356,6 +424,18 @@
 &uart_AO {
 	status = "okay";
 	pinctrl-0 = <&uart_ao_a_pins>;
+	pinctrl-names = "default";
+};
+
+&uart_A {
+	status = "disabled";
+	pinctrl-0 = <&uart_a_pins>;
+	pinctrl-names = "default";
+};
+
+&uart_C {
+	status = "disabled";
+	pinctrl-0 = <&uart_c_pins>;
 	pinctrl-names = "default";
 };
 
