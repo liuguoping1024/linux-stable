@@ -201,6 +201,7 @@ static int set_wifi_power(int is_power)
 {
 	int ret = 0;
 
+	WIFI_INFO("set_wifi_power: %d\n", is_power);
 	if (is_power) {
 		if (wifi_info.power_on_pin) {
 			ret = set_power(1);
@@ -230,6 +231,7 @@ static int set_wifi_power(int is_power)
 
 static void usb_power_control(int is_power, int shift)
 {
+	WIFI_INFO("usb_power_control: %d\n", is_power);
 	mutex_lock(&wifi_bt_mutex);
 	if (is_power) {
 		if (!usb_power) {
@@ -887,6 +889,7 @@ static int wifi_dev_probe(struct platform_device *pdev)
 	ret = class_create_file(wifi_dt_class, &class_attr_power);
 
 	//After WIFI power control driver probe, re-init WIFI power
+	WIFI_INFO("After WIFI power control driver probe, re-init WIFI power.\n");
 	set_power(0);
 	msleep(200);
 	set_power(1);

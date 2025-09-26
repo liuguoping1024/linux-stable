@@ -324,6 +324,7 @@ int mmc_add_card(struct mmc_card *card)
 
 
 	dev_set_name(&card->dev, "%s:%04x", mmc_hostname(card->host), card->rca);
+	pr_info("mmc_add_card: %s\n", mmc_hostname(card->host));
 
 	switch (card->type) {
 	case MMC_TYPE_MMC:

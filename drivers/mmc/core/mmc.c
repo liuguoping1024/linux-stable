@@ -2246,6 +2246,8 @@ int mmc_attach_mmc(struct mmc_host *host)
 
 	WARN_ON(!host->claimed);
 
+	pr_info("## mmc_attach_mmc: %s\n", mmc_hostname(host));
+
 	/* Set correct bus mode for MMC before attempting attach */
 	if (!mmc_host_is_spi(host))
 		mmc_set_bus_mode(host, MMC_BUSMODE_OPENDRAIN);

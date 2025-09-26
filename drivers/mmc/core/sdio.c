@@ -1193,6 +1193,7 @@ int mmc_attach_sdio(struct mmc_host *host)
 
 	WARN_ON(!host->claimed);
 
+	pr_info("## mmc_attach_sdio: %s\n", mmc_hostname(host));
 	err = mmc_send_io_op_cond(host, 0, &ocr);
 	if (err)
 		return err;
@@ -1319,7 +1320,7 @@ int sdio_reset_comm(struct mmc_card *card)
 	u32 rocr;
 	int err;
 
-	pr_err("%s():\n", __func__);
+	pr_info("%s(): %s \n", __func__, mmc_hostname(host));
 	mmc_claim_host(host);
 
 	mmc_retune_disable(host);
@@ -1335,18 +1336,23 @@ int sdio_reset_comm(struct mmc_card *card)
 	mmc_set_clock(host, host->f_min);
 
 	err = mmc_send_io_op_cond(host, 0, &ocr);
-	if (err)
+	if (err) {
+		pr_err("%s:mmc_send_io_op_cond err:%d\n",mmc_hostname(host), err);
 		goto err;
+	}
 
 	rocr = mmc_select_voltage(host, ocr);
 	if (!rocr) {
 		err = -EINVAL;
+		pr_err("%s:mmc_select_voltage err:%d\n",mmc_hostname(host), err);
 		goto err;
 	}
 
 	err = mmc_sdio_init_card(host, rocr, card);
-	if (err)
+	if (err) {
+		pr_err("%s:mmc_sdio_init_card err:%d\n",mmc_hostname(host), err);
 		goto err;
+	}
 
 	mmc_release_host(host);
 	return 0;

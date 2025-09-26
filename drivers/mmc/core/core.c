@@ -2183,7 +2183,7 @@ static int mmc_rescan_try_freq(struct mmc_host *host, unsigned freq)
 {
 	host->f_init = freq;
 
-	pr_debug("%s: %s: trying to init card at %u Hz\n",
+	pr_info("%s: %s: trying to init card at %u Hz\n",
 		mmc_hostname(host), __func__, host->f_init);
 
 	mmc_power_up(host, host->ocr_avail);
@@ -2300,6 +2300,8 @@ void mmc_rescan(struct work_struct *work)
 
 	if (host->rescan_disable)
 		return;
+
+	pr_info("## mmc_rescan: %s\n", mmc_hostname(host));
 
 	/* If there is a non-removable card registered, only scan once */
 	if (!mmc_card_is_removable(host) && host->rescan_entered)
@@ -2424,6 +2426,8 @@ void mmc_stop_host(struct mmc_host *host)
 static int __init mmc_init(void)
 {
 	int ret;
+
+	pr_info("## mmc_init\n");
 
 	ret = mmc_register_bus();
 	if (ret)

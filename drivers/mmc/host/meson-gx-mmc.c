@@ -1391,14 +1391,14 @@ static void sdio_rescan(struct mmc_host *mmc)
 
 void sdio_reinit(void)
 {
-#if 1
+	#if 1
 	printk("[%s] \n", __func__);
 	if (sdio_host) {
-		if (sdio_host->card){
-			printk("[%s] sdio_reset_comm\n", __func__);
+		if (sdio_host->card) {
+			printk("[%s] sdio_reset_comm: %s\n", __func__, mmc_hostname(sdio_host));
 			sdio_reset_comm(sdio_host->card);
 		}else{
-			printk("[%s] sdio_rescan\n", __func__);
+			printk("[%s] sdio_rescan: %s\n", __func__, mmc_hostname(sdio_host));
 			sdio_rescan(sdio_host);
 		}
 	} else {

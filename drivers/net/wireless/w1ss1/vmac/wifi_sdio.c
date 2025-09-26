@@ -1886,6 +1886,7 @@ static struct sdio_driver aml_sdio_driver =
 int  aml_sdio_init(void)
 {
     int err = 0;
+    PRINT("aml_sdio_init++ \n");
 
     amlwifi_set_sdio_host_clk(sdioclk);
 
