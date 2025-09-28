@@ -755,6 +755,13 @@ MODULE_PARM_DESC(btpower_evt, "btpower_evt");
 module_param(btwake_evt, int, 0664);
 MODULE_PARM_DESC(btwake_evt, "btwake_evt");
 
+module_init(bt_init);
+module_exit(bt_exit);
+
+MODULE_DESCRIPTION("bt rfkill");
+MODULE_AUTHOR("");
+MODULE_LICENSE("GPL");
+
 /**************** bt mac *****************/
 
 //static int __init mac_addr_set(char *line)

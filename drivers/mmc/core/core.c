@@ -2081,18 +2081,29 @@ static int mmc_rescan_try_freq(struct mmc_host *host, unsigned freq)
 			return 0;
 	}
 
+	pr_warn("%s(%s)\n", __func__, mmc_hostname(host));
+
 	/* Order's important: probe SDIO, then SD, then MMC */
-	if (!(host->caps2 & MMC_CAP2_NO_SDIO))
-		if (!mmc_attach_sdio(host))
+	if (!(host->caps2 & MMC_CAP2_NO_SDIO)) {
+		pr_warn("%s -> try mmc_attach_sdio(%s)\n", __func__, mmc_hostname(host));
+		if (!mmc_attach_sdio(host)) {
 			return 0;
+		}
+	}
 
-	if (!(host->caps2 & MMC_CAP2_NO_SD))
-		if (!mmc_attach_sd(host))
+	if (!(host->caps2 & MMC_CAP2_NO_SD)) {
+		pr_warn("%s -> try mmc_attach_sd (%s)\n", __func__, mmc_hostname(host));
+		if (!mmc_attach_sd(host)) {
 			return 0;
+		}
+	}
 
-	if (!(host->caps2 & MMC_CAP2_NO_MMC))
-		if (!mmc_attach_mmc(host))
+	if (!(host->caps2 & MMC_CAP2_NO_MMC)) {
+		pr_warn("%s -> try mmc_attach_mmc (%s)\n", __func__, mmc_hostname(host));
+		if (!mmc_attach_mmc(host)) {
 			return 0;
+		}
+	}
 
 out:
 	mmc_power_off(host);

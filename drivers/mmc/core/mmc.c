@@ -2031,6 +2031,8 @@ static void mmc_detect(struct mmc_host *host)
 {
 	int err;
 
+	pr_warn("%s(%s) ...\n", __func__, mmc_hostname(host));
+
 	mmc_get_card(host->card, NULL);
 
 	/*
@@ -2114,6 +2116,7 @@ out:
 static int mmc_suspend(struct mmc_host *host)
 {
 	int err;
+	pr_warn("%s(%s) ...\n", __func__, mmc_hostname(host));
 
 	err = _mmc_suspend(host, true);
 	if (!err) {
@@ -2131,6 +2134,7 @@ static int mmc_suspend(struct mmc_host *host)
 static int _mmc_resume(struct mmc_host *host)
 {
 	int err = 0;
+	pr_warn("%s(%s) ...\n", __func__, mmc_hostname(host));
 
 	mmc_claim_host(host);
 
@@ -2152,6 +2156,7 @@ out:
 static int mmc_shutdown(struct mmc_host *host)
 {
 	int err = 0;
+	pr_warn("%s(%s) ...\n", __func__, mmc_hostname(host));
 
 	/*
 	 * In a specific case for poweroff notify, we need to resume the card
@@ -2172,6 +2177,7 @@ static int mmc_shutdown(struct mmc_host *host)
  */
 static int mmc_resume(struct mmc_host *host)
 {
+	pr_warn("%s(%s) ...\n", __func__, mmc_hostname(host));
 	pm_runtime_enable(&host->card->dev);
 	return 0;
 }
@@ -2267,6 +2273,8 @@ int mmc_attach_mmc(struct mmc_host *host)
 	u32 ocr, rocr;
 
 	WARN_ON(!host->claimed);
+
+	pr_warn("%s(%s)\n", __func__, mmc_hostname(host));
 
 	/* Set correct bus mode for MMC before attempting attach */
 	if (!mmc_host_is_spi(host))

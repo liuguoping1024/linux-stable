@@ -19,7 +19,11 @@
 		serial1 = &uart_A; /* UART Bluetooth */
 		serial3 = &uart_AO_B; /* ZigBee */
 		serial6 = &uart_B; /* Thread */
+		
 		ethernet0 = &ethmac;
+
+		mmc0 = &sd_emmc_c; /* emmc storage */
+		mmc1 = &sd_emmc_b; /* wifi module */
 	};
 
 	chosen {
@@ -221,7 +225,7 @@
 
 /* Internal I2C bus (on CPU module) */
 &i2c1 {
-	status = "okay";
+	status = "disabled";
 	pinctrl-0 = <&i2c1_z_pins>;
 	pinctrl-names = "default";
 
@@ -348,7 +352,7 @@
 };
 
 &spicc1 {
-	status = "okay";
+	status = "disabled";
 	pinctrl-0 = <&spi1_x_pins>, <&spi1_ss0_x_pins>;
 	pinctrl-names = "default";
 };

@@ -543,6 +543,7 @@ static int really_probe(struct device *dev, struct device_driver *drv)
 			   !drv->suppress_bind_attrs;
 	int ret;
 
+	pr_warn("%s: really_probe\n", drv->name);
 	if (defer_all_probes) {
 		/*
 		 * Value of defer_all_probes can be set only by
@@ -557,7 +558,7 @@ static int really_probe(struct device *dev, struct device_driver *drv)
 	if (ret)
 		return ret;
 
-	pr_debug("bus: '%s': %s: probing driver %s with device %s\n",
+		pr_warn("bus: '%s': %s: probing driver %s with device %s\n",
 		 drv->bus->name, __func__, drv->name, dev_name(dev));
 	if (!list_empty(&dev->devres_head)) {
 		dev_crit(dev, "Resources present before probing\n");
@@ -570,13 +571,16 @@ re_probe:
 
 	/* If using pinctrl, bind pins now before probing */
 	ret = pinctrl_bind_pins(dev);
+	pr_warn("%s: really_probe pinctrl_bind_pins ret:%d\n", drv->name,ret);
 	if (ret)
 		goto pinctrl_bind_failed;
 
 	if (dev->bus->dma_configure) {
 		ret = dev->bus->dma_configure(dev);
-		if (ret)
+		if (ret) {
+			pr_warn("%s: really_probe dma_configure ret:%d\n", drv->name,ret);
 			goto probe_failed;
+		}
 	}
 
 	ret = driver_sysfs_add(dev);
@@ -588,8 +592,10 @@ re_probe:
 
 	if (dev->pm_domain && dev->pm_domain->activate) {
 		ret = dev->pm_domain->activate(dev);
-		if (ret)
+		if (ret) {
+			pr_warn("%s: really_probe pm_domain activate ret:%d\n", drv->name,ret);
 			goto probe_failed;
+		}
 	}
 
 	ret = call_driver_probe(dev, drv);
@@ -599,12 +605,14 @@ re_probe:
 		 * can distinguish them from other errors.
 		 */
 		ret = -ret;
+		pr_warn("%s: really_probe call_driver_probe ret:%d\n", drv->name,ret);
 		goto probe_failed;
 	}
 
 	ret = device_add_groups(dev, drv->dev_groups);
 	if (ret) {
 		dev_err(dev, "device_add_groups() failed\n");
+		pr_warn("%s: really_probe device_add_groups ret:%d\n", drv->name,ret);
 		goto dev_groups_failed;
 	}
 
@@ -612,6 +620,7 @@ re_probe:
 		ret = device_create_file(dev, &dev_attr_state_synced);
 		if (ret) {
 			dev_err(dev, "state_synced sysfs add failed\n");
+			pr_warn("%s: really_probe sysfs add ret:%d\n", drv->name,ret);
 			goto dev_sysfs_state_synced_failed;
 		}
 	}
@@ -638,6 +647,7 @@ re_probe:
 			dev->pm_domain->dismiss(dev);
 		pm_runtime_reinit(dev);
 
+		pr_warn("%s: really_probe test_remove\n", drv->name);
 		goto re_probe;
 	}
 
@@ -647,7 +657,7 @@ re_probe:
 		dev->pm_domain->sync(dev);
 
 	driver_bound(dev);
-	pr_debug("bus: '%s': %s: bound device %s to driver %s\n",
+	pr_warn("bus: '%s': %s: bound device %s to driver %s\n",
 		 drv->bus->name, __func__, dev_name(dev), drv->name);
 	goto done;
 

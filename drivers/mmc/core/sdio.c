@@ -939,6 +939,8 @@ static void mmc_sdio_detect(struct mmc_host *host)
 {
 	int err;
 
+	pr_warn("%s(%s):\n", __func__, mmc_hostname(host));
+
 	/* Make sure card is powered before detecting it */
 	if (host->caps & MMC_CAP_POWER_OFF_CARD) {
 		err = pm_runtime_resume_and_get(&host->card->dev);
@@ -1027,6 +1029,8 @@ static int mmc_sdio_suspend(struct mmc_host *host)
 {
 	WARN_ON(host->sdio_irqs && !mmc_card_keep_power(host));
 
+	pr_warn("%s(%s):\n", __func__, mmc_hostname(host));
+
 	/* Prevent processing of SDIO IRQs in suspended state. */
 	mmc_card_set_suspended(host->card);
 	cancel_delayed_work_sync(&host->sdio_irq_work);
@@ -1051,6 +1055,8 @@ static int mmc_sdio_suspend(struct mmc_host *host)
 static int mmc_sdio_resume(struct mmc_host *host)
 {
 	int err = 0;
+
+	pr_warn("%s(%s):\n", __func__, mmc_hostname(host));
 
 	/* Basic card reinitialization. */
 	mmc_claim_host(host);
@@ -1196,6 +1202,8 @@ int mmc_attach_sdio(struct mmc_host *host)
 	struct mmc_card *card;
 
 	WARN_ON(!host->claimed);
+
+	pr_warn("%s(%s)\n", __func__, mmc_hostname(host));
 
 	err = mmc_send_io_op_cond(host, 0, &ocr);
 	if (err)

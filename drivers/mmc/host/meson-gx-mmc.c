@@ -1293,11 +1293,17 @@
 		 goto err_free_irq;
  
 	 /* if sdio_wifi */
-	 printk("###%s: Check MMC Type ###\n",mmc_hostname(mmc));
+	 printk("### %s: Check MMC Type 0x%x ###\n",mmc_hostname(mmc),mmc->caps2);
 	 if (!(mmc->caps2 & MMC_CAP2_NO_SDIO))
 	 {
-		 printk("###%s: Set sdio_host ###\n",mmc_hostname(mmc));
-		 sdio_host = mmc;
+		/* 只选择 mmc1 (ffe05000.sdio) 作为 sdio_host */
+		if (strcmp(mmc_hostname(mmc), "mmc1") == 0) {
+			printk("### %s: [1]Set sdio_host ###\n",mmc_hostname(mmc));
+			sdio_host = mmc;
+			printk("### %s: [2]Set sdio_host: %p ###\n",mmc_hostname(mmc),sdio_host);
+		} else {
+			printk("### %s: Skip setting sdio_host (not mmc1) ###\n",mmc_hostname(mmc));
+		}
 	 }
 			 
 	 return 0;
@@ -1396,8 +1402,9 @@
  void sdio_reinit(void)
  {
  #if 1
-	 printk("[%s] \n", __func__);
+ 	printk("[%s] start ... \n", __func__);
 	 if (sdio_host) {
+		printk("[%s] - mmc: %s \n", __func__, mmc_hostname(sdio_host));
 		 if (sdio_host->card){
 			 printk("[%s] sdio_reset_comm\n", __func__);
 			 sdio_reset_comm(sdio_host->card);

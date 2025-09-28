@@ -1156,6 +1156,10 @@ void __exit pwm_meson_exit(void)
 {
 	platform_driver_unregister(&meson_pwm_driver);
 }
+
+module_init(pwm_meson_init);
+//fs_initcall_sync(meson_pwm_init);
+module_exit(pwm_meson_exit);
 #else
 module_platform_driver(meson_pwm_driver);
 module_exit(meson_pwm_exit);

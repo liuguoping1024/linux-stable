@@ -25,7 +25,7 @@
 #include <linux/amlogic/pm.h>
 #include <linux/uaccess.h>
 #include <linux/pci.h>
-#include <linux/amlogic/aml_sd.h>
+//#include <linux/amlogic/aml_sd.h>
 #include <linux/printk.h>
 #ifdef CONFIG_AMLOGIC_PWM_32K
 #include <linux/pwm.h>
@@ -33,6 +33,10 @@
 #endif
 //#include <gpiolib-of.h>
 #define OWNER_NAME "sdio_wifi"
+
+extern void sdio_reinit(void);
+extern const char *get_wifi_inf(void);
+extern int sdio_get_vendor(void);
 
 static char aml_wifi_chip_type[15] = "NULL";
 
@@ -1018,14 +1022,20 @@ int __init wifi_dt_init(void)
 {
 	int ret;
 
+	pr_info("amlogic wifi dt init\n");
+
 	ret = platform_driver_register(&wifi_plat_driver);
 	return ret;
 }
+
+/* module_init(wifi_dt_init); */
+fs_initcall_sync(wifi_dt_init);
 
 void __exit wifi_dt_exit(void)
 {
 	platform_driver_unregister(&wifi_plat_driver);
 }
+module_exit(wifi_dt_exit);
 
 /**************** wifi mac *****************/
 u8 WIFI_MAC[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
