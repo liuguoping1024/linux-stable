@@ -18,6 +18,10 @@
 	};
 };
 
+&reboot {
+	sd-vqen = <&gpio_ao GPIOAO_3 GPIO_ACTIVE_HIGH>;
+};
+
 /* Camera (CSI) bus */
 &i2c1 {
 	status = "okay";
