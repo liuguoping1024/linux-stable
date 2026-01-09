@@ -1324,6 +1324,8 @@ patternProperties:
     description: Sundance DSP Inc.
   "^sunplus,.*":
     description: Sunplus Technology Co., Ltd.
+  "^sunvell,.*":
+    description: Shenzhen Sunvell Electronics Co., Ltd
   "^SUNW,.*":
     description: Sun Microsystems, Inc
   "^supermicro,.*":

@@ -107,6 +107,7 @@ obj-$(CONFIG_RC_MAP) += \
 			rc-reddo.o \
 			rc-snapstream-firefly.o \
 			rc-streamzap.o \
+			rc-sunvell-t95z-plus.o \
 			rc-su3000.o \
 			rc-tanix-tx3mini.o \
 			rc-tanix-tx5max.o \
