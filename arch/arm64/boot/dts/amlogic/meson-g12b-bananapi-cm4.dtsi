@@ -12,6 +12,15 @@
 		rtc1 = &vrtc;
 	};
 
+	reboot: meson64-reboot {
+		compatible = "meson64,reboot";
+		sys_reset = <0x84000009>;
+		sys_poweroff = <0x84000008>;
+
+		sd-vqsw = <&gpio_ao GPIOAO_9 GPIO_ACTIVE_HIGH>;
+		sd-vmmc = <&gpio_ao GPIOAO_8 GPIO_ACTIVE_HIGH>;
+	};
+
 	chosen {
 		stdout-path = "serial0:115200n8";
 	};
@@ -294,8 +303,10 @@
 	#size-cells = <0>;
 
 	bus-width = <4>;
+	cap-sd-highspeed;
+	sd-uhs-sdr50;
 	sd-uhs-sdr104;
-	max-frequency = <50000000>;
+	max-frequency = <100000000>;
 
 	non-removable;
 	disable-wp;
@@ -303,10 +314,13 @@
 	/* WiFi firmware requires power in suspend */
 	keep-power-in-suspend;
 
+	/* Removing quirk improves WiFi performance */
+	/delete-property/ amlogic,dram-access-quirk;
+
 	mmc-pwrseq = <&sdio_pwrseq>;
 
 	vmmc-supply = <&vddao_3v3>;
-	vqmmc-supply = <&vddao_3v3>;
+	vqmmc-supply = <&vddao_1v8>;
 
 	status = "okay";
 
@@ -369,8 +383,7 @@
 
 	bluetooth {
 		compatible = "realtek,rtl8822cs-bt";
-		enable-gpios  = <&gpio GPIOX_17 GPIO_ACTIVE_HIGH>;
-		host-wake-gpios = <&gpio GPIOX_19 GPIO_ACTIVE_HIGH>;
+		enable-gpios = <&gpio GPIOX_19 GPIO_ACTIVE_HIGH>;
 		device-wake-gpios = <&gpio GPIOX_18 GPIO_ACTIVE_HIGH>;
 	};
 };
