@@ -56,5 +56,7 @@ int mmc_cmdq_enable(struct mmc_card *card);
 int mmc_cmdq_disable(struct mmc_card *card);
 int mmc_sanitize(struct mmc_card *card, unsigned int timeout_ms);
 
+int mmc_interrupt_hpi(struct mmc_card *card);
+
 #endif
 

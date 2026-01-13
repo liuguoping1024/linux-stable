@@ -205,6 +205,8 @@ source "drivers/ras/Kconfig"
 
 source "drivers/thunderbolt/Kconfig"
 
+source "drivers/amlogic/Kconfig"
+
 source "drivers/android/Kconfig"
 
 source "drivers/gpu/trace/Kconfig"

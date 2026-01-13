@@ -918,9 +918,6 @@ static int sdhci_acpi_probe(struct platform_device *pdev)
 				goto err_free;
 			dev_warn(dev, "failed to setup card detect gpio\n");
 			c->use_runtime_pm = false;
-		} else if (quirks & DMI_QUIRK_SD_CD_ENABLE_PULL_UP) {
-			mmc_gpiod_set_cd_config(host->mmc,
-						PIN_CONF_PACKED(PIN_CONFIG_BIAS_PULL_UP, 20000));
 		}
 
 		if (quirks & DMI_QUIRK_RESET_SD_SIGNAL_VOLT_ON_SUSP)

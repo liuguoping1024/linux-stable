@@ -464,7 +464,7 @@ static int mmc_busy_cb(void *cb_data, bool *busy)
 	u32 status = 0;
 	int err;
 
-	if (data->busy_cmd != MMC_BUSY_IO && host->ops->card_busy) {
+	if (host->ops->card_busy) {
 		*busy = host->ops->card_busy(host);
 		return 0;
 	}
@@ -486,7 +486,6 @@ static int mmc_busy_cb(void *cb_data, bool *busy)
 		break;
 	case MMC_BUSY_HPI:
 	case MMC_BUSY_EXTR_SINGLE:
-	case MMC_BUSY_IO:
 		break;
 	default:
 		err = -EINVAL;
@@ -616,6 +615,9 @@ int __mmc_switch(struct mmc_card *card, u8 set, u8 index, u8 value,
 		  (value << 8) |
 		  set;
 	use_r1b_resp = mmc_prepare_busy_cmd(host, &cmd, timeout_ms);
+
+	if (index == EXT_CSD_SANITIZE_START)
+	cmd.sanitize_busy = true;
 
 	err = mmc_wait_for_cmd(host, &cmd, retries);
 	if (err)
@@ -895,7 +897,7 @@ static int mmc_send_hpi_cmd(struct mmc_card *card)
  *	Issued High Priority Interrupt, and check for card status
  *	until out-of prg-state.
  */
-static int mmc_interrupt_hpi(struct mmc_card *card)
+int mmc_interrupt_hpi(struct mmc_card *card)
 {
 	int err;
 	u32 status;
