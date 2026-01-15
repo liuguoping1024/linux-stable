@@ -13,6 +13,10 @@
 	compatible = "bananapi,bpi-m2-pro", "amlogic,sm1";
 	model = "Banana Pi BPI-M2-PRO";
 
+	aliases {
+		serial1 = &uart_A;
+	};
+
 	sound {
 		compatible = "amlogic,axg-sound-card";
 		model = "BPI-M2-PRO";
@@ -94,4 +98,10 @@
 
 &tohdmitx {
 	status = "okay";
+};
+
+&uart_A {
+	status = "disabled";
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart_a_pins>;
 };
