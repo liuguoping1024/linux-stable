@@ -75,15 +75,11 @@ EXPORT_SYMBOL(mmc_gpio_set_cd_irq);
 int mmc_gpio_get_ro(struct mmc_host *host)
 {
 	struct mmc_gpio *ctx = host->slot.handler_priv;
-	int cansleep;
 
 	if (!ctx || !ctx->ro_gpio)
 		return -ENOSYS;
 
-	cansleep = gpiod_cansleep(ctx->ro_gpio);
-	return cansleep ?
-		gpiod_get_value_cansleep(ctx->ro_gpio) :
-		gpiod_get_value(ctx->ro_gpio);
+	return gpiod_get_value_cansleep(ctx->ro_gpio);
 }
 EXPORT_SYMBOL(mmc_gpio_get_ro);
 
@@ -137,6 +133,26 @@ void mmc_gpiod_request_cd_irq(struct mmc_host *host)
 		host->caps |= MMC_CAP_NEEDS_POLL;
 }
 EXPORT_SYMBOL(mmc_gpiod_request_cd_irq);
+
+/**
+ * mmc_gpiod_set_cd_config - set config for card-detection GPIO
+ * @host: mmc host
+ * @config: Generic pinconf config (from pinconf_to_config_packed())
+ *
+ * This can be used by mmc host drivers to fixup a card-detection GPIO's config
+ * (e.g. set PIN_CONFIG_BIAS_PULL_UP) after acquiring the GPIO descriptor
+ * through mmc_gpiod_request_cd().
+ *
+ * Returns:
+ * 0 on success, or a negative errno value on error.
+ */
+int mmc_gpiod_set_cd_config(struct mmc_host *host, unsigned long config)
+{
+	struct mmc_gpio *ctx = host->slot.handler_priv;
+
+	return gpiod_set_config(ctx->cd_gpio, config);
+}
+EXPORT_SYMBOL(mmc_gpiod_set_cd_config);
 
 int mmc_gpio_set_cd_wake(struct mmc_host *host, bool on)
 {
@@ -220,26 +236,6 @@ int mmc_gpiod_request_cd(struct mmc_host *host, const char *con_id,
 	return 0;
 }
 EXPORT_SYMBOL(mmc_gpiod_request_cd);
-
-/**
- * mmc_gpiod_set_cd_config - set config for card-detection GPIO
- * @host: mmc host
- * @config: Generic pinconf config (from pinconf_to_config_packed())
- *
- * This can be used by mmc host drivers to fixup a card-detection GPIO's config
- * (e.g. set PIN_CONFIG_BIAS_PULL_UP) after acquiring the GPIO descriptor
- * through mmc_gpiod_request_cd().
- *
- * Returns:
- * 0 on success, or a negative errno value on error.
- */
-int mmc_gpiod_set_cd_config(struct mmc_host *host, unsigned long config)
-{
-	struct mmc_gpio *ctx = host->slot.handler_priv;
-
-	return gpiod_set_config(ctx->cd_gpio, config);
-}
-EXPORT_SYMBOL(mmc_gpiod_set_cd_config);
 
 bool mmc_can_gpio_cd(struct mmc_host *host)
 {
