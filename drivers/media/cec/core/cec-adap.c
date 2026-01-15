@@ -510,9 +510,9 @@ int cec_thread_func(void *_adap)
 			 * default).
 			 */
 			if (adap->transmitting) {
-				pr_warn("cec-%s: message %*ph timed out\n", adap->name,
-					adap->transmitting->msg.len,
-					adap->transmitting->msg.msg);
+				//pr_warn("cec-%s: message %*ph timed out\n", adap->name,
+				//	adap->transmitting->msg.len,
+				//	adap->transmitting->msg.msg);
 				/* Just give up on this. */
 				cec_data_cancel(adap->transmitting,
 						CEC_TX_STATUS_TIMEOUT, 0);
