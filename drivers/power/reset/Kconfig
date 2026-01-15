@@ -148,6 +148,13 @@ config POWER_RESET_ODROID_GO_ULTRA_POWEROFF
 	help
 	  This driver supports Power off for Odroid Go Ultra device.
 
+config POWER_RESET_MESON64
+	bool "Meson64 reboot/power-off driver"
+	depends on ARCH_MESON
+	help
+	  The driver supports restart / power off for amlogic
+	  g12a, g12b and sm1 SoCs
+
 config POWER_RESET_PIIX4_POWEROFF
 	tristate "Intel PIIX4 power-off driver"
 	depends on PCI
