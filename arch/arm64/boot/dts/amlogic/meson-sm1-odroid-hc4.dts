@@ -21,6 +21,10 @@
 		#cooling-cells = <2>;
 		cooling-levels = <0 120 170 220>;
 		pwms = <&pwm_cd 1 40000 0>;
+		fan-supply = <&vcc_5v>;
+		interrupt-parent = <&gpio_intc>;
+		interrupts = <84 IRQ_TYPE_EDGE_FALLING>;
+		pulses-per-revolutions = <2>;
 	};
 
 	leds {
