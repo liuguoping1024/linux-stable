@@ -8,6 +8,7 @@
 #include <dt-bindings/leds/common.h>
 #include <dt-bindings/input/linux-event-codes.h>
 #include <dt-bindings/gpio/meson-g12a-gpio.h>
+#include <dt-bindings/mmc/meson-gx-mmc.h>
 
 / {
 	adc-keys {
@@ -394,6 +395,8 @@
 	cd-gpios = <&gpio GPIOC_6 GPIO_ACTIVE_LOW>;
 	vmmc-supply = <&tflash_vdd>;
 	vqmmc-supply = <&vddio_c>;
+
+	amlogic,mmc-phase = <CLK_PHASE_270 CLK_PHASE_0 CLK_PHASE_0>;
 };
 
 /* eMMC */
@@ -413,6 +416,8 @@
 	mmc-pwrseq = <&emmc_pwrseq>;
 	vmmc-supply = <&vddao_3v3>;
 	vqmmc-supply = <&emmc_1v8>;
+
+	amlogic,mmc-phase = <CLK_PHASE_270 CLK_PHASE_0 CLK_PHASE_0>;
 };
 
 &uart_AO {
