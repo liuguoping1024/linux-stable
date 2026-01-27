@@ -1,0 +1,74 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright (c) 2022 Vyacheslav Bocharov <adeep@lexina.in>
+ * Copyright (c) 2022 JetHome
+ * Author: Vyacheslav Bocharov <adeep@lexina.in>
+ */
+
+/dts-v1/;
+
+#include "meson-axg-jethome-jethub-j1xx.dtsi"
+
+/ {
+	compatible = "ThirdReality,trhub-v3b", "amlogic,a113d", "amlogic,meson-axg";
+	model = "ThirdReality TRHub-V3b";
+
+
+	/* 2048MB RAM */
+	memory@0 {
+		device_type = "memory";
+		reg = <0x0 0x0 0x0 0x80000000>;
+	};
+
+	/* Amlogic Bluetooth controller */
+	aml_bt: aml_bt {
+		compatible = "amlogic, aml-bt";
+		status = "okay";
+	};
+
+	aml_wifi: aml_wifi {
+		compatible = "amlogic, aml-wifi";
+		status = "okay";
+		irq_trigger_type = "IRQF_TRIGGER_LOW";
+		//dhd_static_buf; /* if use bcm wifi, config dhd_static_buf */
+		//pinctrl-0 = <&pwm_e_pins>;
+		//pinctrl-names = "default";
+		pwm_config = <&wifi_pwm_conf>;
+		//pwm_config = <&sdio_pwrseq>;
+	};
+
+	
+	wifi_pwm_conf:wifi_pwm_conf{
+		pwm_channel1_conf {
+			pwms = <&pwm_AO_cd 0 30541 0>;
+			duty-cycle = <15270>;
+			times = <10>;
+		};
+		
+		pwm_channel2_conf {
+			pwms = <&pwm_AO_cd 2 30500 0>;
+			duty-cycle = <15250>;
+			times = <12>;
+		};
+	};
+};
+
+/* wifi module */
+&sd_emmc_b {
+	broken-cd;/* cd-gpios = <&gpio_ao GPIOAO_3 GPIO_ACTIVE_LOW>;*/
+};
+
+
+&aml_wifi{
+	status = "okay";
+	interrupt-gpios = <&gpio  GPIOX_6  GPIO_ACTIVE_HIGH>;
+	power_on-gpios = <&gpio   GPIOX_7  GPIO_ACTIVE_HIGH>;
+	//power_on_2-gpios= <&gpio  GPIOX_16 GPIO_ACTIVE_HIGH>;
+};
+
+&aml_bt {
+	status = "okay";
+	reset-gpios = <&gpio    GPIOX_21 GPIO_ACTIVE_HIGH>;
+	btwakeup-gpios = <&gpio GPIOZ_7 GPIO_ACTIVE_HIGH>;
+	hostwake-gpios = <&gpio GPIOZ_6 GPIO_ACTIVE_HIGH>;
+};
