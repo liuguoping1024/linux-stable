@@ -1,0 +1,62 @@
+# SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+
+config AMLOGIC_GKI
+	bool "Amlogic GKI macro"
+	default n
+	help
+		This macro controls GKI module build behavior, if enabled
+		some internal code will be build as external module
+		
+config AMLOGIC_MODIFY
+	bool "Amlogic modify for kernel code"
+	default n
+	help
+	  This option is set up for Amlogic modifications of standard
+	  kernel source code. All Amlogic-specific changes to common
+	  kernel code should be wrapped by this config.
+
+config AMLOGIC_KERNEL_VERSION
+	int "Amlogic Kernel Version"
+	default 15606
+	help
+	  Kernel from android15-6.6 is 15606. Drivers may use this
+	  number to adapt to different kernel versions.
+
+config AMLOGIC_ARMV8_AARCH64
+	bool "AARCH64 kernel support for Amlogic ARMv8 Soc"
+	depends on AMLOGIC_MODIFY || COMPILE_TEST
+	default y
+	help
+	  aarch32 and aarch64 kernels are supported for armv8 socs.
+	  enable this config to select 64 bit kernel.
+	  Select Y if doult.
+
+config AMLOGIC_DRIVER
+	bool "Amlogic Peripheral drivers"
+	depends on AMLOGIC_MODIFY
+	default y
+	help
+		this option is provided for control amlogic
+		drivers, if you want to use amlogic driver
+		please open it.
+		Note: All amlogic driver should be placed in
+		this directory
+
+config AMLOGIC_MEDIA_V4L_DEC
+	bool "enable amlogic v4l decode module."
+	default n
+	help
+		Support v4L protocol based decoding components.
+		Decoding is done by AmLogic hardware, and if you
+		need to support this feature, you need to enable
+		this configuration item.
+
+if AMLOGIC_DRIVER
+menu "Amlogic Device Drivers"
+
+source "drivers/amlogic/bluetooth/Kconfig"
+source "drivers/amlogic/wifi/Kconfig"
+
+endmenu
+endif
+

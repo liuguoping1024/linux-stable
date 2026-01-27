@@ -314,20 +314,34 @@ EXPORT_SYMBOL_GPL(pwmchip_add);
  *
  * Removes a PWM chip.
  */
-void pwmchip_remove(struct pwm_chip *chip)
+int pwmchip_remove(struct pwm_chip *chip)
 {
+	unsigned int i;
+	int ret = 0;
+
 	pwmchip_sysfs_unexport(chip);
+
+	mutex_lock(&pwm_lock);
+
+	for (i = 0; i < chip->npwm; i++) {
+		struct pwm_device *pwm = &chip->pwms[i];
+
+		if (test_bit(PWMF_REQUESTED, &pwm->flags)) {
+			ret = -EBUSY;
+			goto out;
+		}
+	}
+
+	list_del_init(&chip->list);
 
 	if (IS_ENABLED(CONFIG_OF))
 		of_pwmchip_remove(chip);
 
-	mutex_lock(&pwm_lock);
-
-	list_del_init(&chip->list);
-
 	free_pwms(chip);
 
+out:
 	mutex_unlock(&pwm_lock);
+	return ret;
 }
 EXPORT_SYMBOL_GPL(pwmchip_remove);
 
@@ -683,7 +697,7 @@ static struct device_link *pwm_device_link_add(struct device *dev,
  * Returns: A pointer to the requested PWM device or an ERR_PTR()-encoded
  * error code on failure.
  */
-static struct pwm_device *of_pwm_get(struct device *dev, struct device_node *np,
+struct pwm_device *of_pwm_get(struct device *dev, struct device_node *np,
 				     const char *con_id)
 {
 	struct pwm_device *pwm = NULL;
@@ -985,9 +999,9 @@ out:
 }
 EXPORT_SYMBOL_GPL(pwm_put);
 
-static void devm_pwm_release(void *pwm)
+static void devm_pwm_release(struct device *dev, void *res)
 {
-	pwm_put(pwm);
+	pwm_put(*(struct pwm_device **)res);
 }
 
 /**
@@ -1003,6 +1017,23 @@ static void devm_pwm_release(void *pwm)
  */
 struct pwm_device *devm_pwm_get(struct device *dev, const char *con_id)
 {
+#ifdef CONFIG_AMLOGIC_MODIFY
+	struct pwm_device **ptr, *pwm;
+
+	ptr = devres_alloc(devm_pwm_release, sizeof(*ptr), GFP_KERNEL);
+	if (!ptr)
+		return ERR_PTR(-ENOMEM);
+
+	pwm = pwm_get(dev, con_id);
+	if (!IS_ERR(pwm)) {
+		*ptr = pwm;
+		devres_add(dev, ptr);
+	} else {
+		devres_free(ptr);
+	}
+
+	return pwm;
+#else
 	struct pwm_device *pwm;
 	int ret;
 
@@ -1015,8 +1046,42 @@ struct pwm_device *devm_pwm_get(struct device *dev, const char *con_id)
 		return ERR_PTR(ret);
 
 	return pwm;
+#endif
 }
 EXPORT_SYMBOL_GPL(devm_pwm_get);
+
+/**
+ * devm_of_pwm_get() - resource managed of_pwm_get()
+ * @dev: device for PWM consumer
+ * @np: device node to get the PWM from
+ * @con_id: consumer name
+ *
+ * This function performs like of_pwm_get() but the acquired PWM device will
+ * automatically be released on driver detach.
+ *
+ * Returns: A pointer to the requested PWM device or an ERR_PTR()-encoded
+ * error code on failure.
+ */
+ struct pwm_device *devm_of_pwm_get(struct device *dev, struct device_node *np,
+	const char *con_id)
+{
+struct pwm_device **ptr, *pwm;
+
+ptr = devres_alloc(devm_pwm_release, sizeof(*ptr), GFP_KERNEL);
+if (!ptr)
+return ERR_PTR(-ENOMEM);
+
+pwm = of_pwm_get(dev, np, con_id);
+if (!IS_ERR(pwm)) {
+*ptr = pwm;
+devres_add(dev, ptr);
+} else {
+devres_free(ptr);
+}
+
+return pwm;
+}
+EXPORT_SYMBOL_GPL(devm_of_pwm_get);
 
 /**
  * devm_fwnode_pwm_get() - request a resource managed PWM from firmware node
@@ -1034,6 +1099,27 @@ struct pwm_device *devm_fwnode_pwm_get(struct device *dev,
 				       struct fwnode_handle *fwnode,
 				       const char *con_id)
 {
+#ifdef CONFIG_AMLOGIC_MODIFY
+	struct pwm_device **ptr, *pwm = ERR_PTR(-ENODEV);
+
+	ptr = devres_alloc(devm_pwm_release, sizeof(*ptr), GFP_KERNEL);
+	if (!ptr)
+		return ERR_PTR(-ENOMEM);
+
+	if (is_of_node(fwnode))
+		pwm = of_pwm_get(dev, to_of_node(fwnode), con_id);
+	else if (is_acpi_node(fwnode))
+		pwm = acpi_pwm_get(fwnode);
+
+	if (!IS_ERR(pwm)) {
+		*ptr = pwm;
+		devres_add(dev, ptr);
+	} else {
+		devres_free(ptr);
+	}
+
+	return pwm;
+#else
 	struct pwm_device *pwm = ERR_PTR(-ENODEV);
 	int ret;
 
@@ -1049,6 +1135,7 @@ struct pwm_device *devm_fwnode_pwm_get(struct device *dev,
 		return ERR_PTR(ret);
 
 	return pwm;
+#endif
 }
 EXPORT_SYMBOL_GPL(devm_fwnode_pwm_get);
 
