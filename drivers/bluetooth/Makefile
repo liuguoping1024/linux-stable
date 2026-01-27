@@ -30,6 +30,7 @@ obj-$(CONFIG_BT_MTK)		+= btmtk.o
 
 obj-$(CONFIG_BT_VIRTIO)		+= virtio_bt.o
 obj-$(CONFIG_BT_NXPUART)	+= btnxpuart.o
+obj-$(CONFIG_AMLOGIC_BT_W1)	+= aml_bt/
 
 obj-$(CONFIG_BT_HCIUART_NOKIA)	+= hci_nokia.o
 

@@ -1,0 +1,13 @@
+config AMLOGIC_WIFI_W1
+	tristate "Amlogic W1 WiFi support"
+	depends on CFG80211 && MAC80211
+	depends on MMC
+	select WIRELESS_EXT
+	select WEXT_PRIV
+	help
+	  This is the driver for Amlogic W1 WiFi chipset.
+	  
+	  The driver supports SDIO interface.
+	  
+	  If you choose to build it as a module, it will be called
+	  vlsicomm. If unsure, say N.

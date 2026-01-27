@@ -1,0 +1,11 @@
+config AMLOGIC_BT_W1
+	tristate "Amlogic W1 Bluetooth support"
+	depends on BT && AMLOGIC_WIFI_W1
+	help
+	  This is the driver for Amlogic W1 Bluetooth chipset.
+	  
+	  The driver requires the W1 WiFi driver (aml_sdio.ko) to be loaded first,
+	  as it depends on the shared SDIO interface layer.
+	  
+	  If you choose to build it as a module, it will be called
+	  sdio_bt. If unsure, say N.
